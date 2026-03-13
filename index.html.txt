@@ -350,7 +350,7 @@
 // =============================================
 // CONFIGURACIÓN — SOLO CAMBIA ESTO
 // =============================================
-const AIRTABLE_TOKEN = 'pat6mAbURpkEh1nri';  //
+const AIRTABLE_TOKEN = 'patQXe5sdH8IrB823.e827199dd1d50e2503c6b102d4b99cd6d61d26542c6c27f5860201504dba8d7f';  //
 const BASE_ID = 'appPn5lR13YCseEdr';
 const TABLE_ID = 'tbl065JZmgYp6TDiS';
 // =============================================
@@ -619,4 +619,5 @@ cargarDatos();
 setInterval(cargarDatos, 60000); // auto-refresco cada 60 segundos
 </script>
 </body>
+
 </html>
