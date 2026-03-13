@@ -421,7 +421,7 @@
 // =============================================
 // CONFIGURACIÓN — SOLO CAMBIA ESTO
 // =============================================
-const AIRTABLE_TOKEN = 'patQXe5sdH8IrB823';  // ← reemplaza con tu token
+const AIRTABLE_TOKEN = 'patQXe5sdH8IrB823';  // 
 const BASE_ID = 'appPn5lR13YCseEdr';
 const TABLE_ID = 'tbl065JZmgYp6TDiS';
 // =============================================
@@ -544,3 +544,176 @@ function renderTabla() {
   document.getElementById('pag-info').textContent = `${filtrados.length} prospecto${filtrados.length !== 1 ? 's' : ''}`;
   actualizarStats();
 }
+
+function actualizarStats() {
+  document.getElementById('stat-total').textContent = registros.length;
+  document.getElementById('stat-activos').textContent = registros.filter(p => p.estado === 'Cliente potencial' || p.estado === 'Cliente activo').length;
+  document.getElementById('stat-alta').textContent = registros.filter(p => p.prioridad === 'Alta').length;
+  document.getElementById('stat-seguimiento').textContent = registros.filter(p => p.proximo).length;
+  const scores = registros.filter(p => p.score).map(p => Number(p.score));
+  document.getElementById('stat-score').textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '–';
+}
+
+// ─── FILTRAR ─────────────────────────────────
+function filtrar() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const estado = document.getElementById('filtroEstado').value;
+  const prior = document.getElementById('filtroPrioridad').value;
+  filtrados = registros.filter(p => {
+    const texto = [p.empresa, p.contacto, p.producto, p.email, p.ciudad, p.notas, p.categoria].join(' ').toLowerCase();
+    return (!q || texto.includes(q)) && (!estado || p.estado === estado) && (!prior || p.prioridad === prior);
+  });
+  renderTabla();
+}
+
+function limpiarFiltros() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filtroEstado').value = '';
+  document.getElementById('filtroPrioridad').value = '';
+  filtrar();
+}
+
+// ─── MODAL ───────────────────────────────────
+function abrirModal(id = null) {
+  editingId = id;
+  const p = id ? registros.find(x => x._id === id) : null;
+  document.getElementById('modalTitle').textContent = id ? 'Editar Prospecto' : 'Nuevo Prospecto';
+  const campos = ['empresa','categoria','producto','pais','ciudad','contacto','cargo','email','telefono','web','estado','prioridad','fechaContacto','proximo','notas','score'];
+  campos.forEach(c => {
+    const el = document.getElementById('f-' + c);
+    if (el) el.value = p ? (p[c] || '') : '';
+  });
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function editarProspecto(id) { abrirModal(id); }
+function cerrarModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function cerrarModalSiFondo(e) { if (e.target.id === 'modalOverlay') cerrarModal(); }
+
+// ─── GUARDAR ─────────────────────────────────
+async function guardarProspecto() {
+  const empresa = document.getElementById('f-empresa').value.trim();
+  if (!empresa) { mostrarToast('El nombre de la empresa es obligatorio', true); return; }
+
+  const d = {
+    categoria: document.getElementById('f-categoria').value,
+    producto: document.getElementById('f-producto').value,
+    pais: document.getElementById('f-pais').value,
+    ciudad: document.getElementById('f-ciudad').value,
+    contacto: document.getElementById('f-contacto').value,
+    cargo: document.getElementById('f-cargo').value,
+    email: document.getElementById('f-email').value,
+    telefono: document.getElementById('f-telefono').value,
+    web: document.getElementById('f-web').value,
+    estado: document.getElementById('f-estado').value,
+    prioridad: document.getElementById('f-prioridad').value,
+    fechaContacto: document.getElementById('f-fechaContacto').value,
+    proximo: document.getElementById('f-proximo').value,
+    notas: document.getElementById('f-notas').value,
+    score: document.getElementById('f-score').value,
+  };
+
+  const notasFormateadas = [
+    d.categoria ? `Categoría: ${d.categoria}` : '',
+    d.producto ? `Producto: ${d.producto}` : '',
+    (d.pais || d.ciudad) ? `País: ${d.pais}${d.ciudad ? ' | Ciudad: ' + d.ciudad : ''}` : '',
+    (d.contacto || d.cargo) ? `Contacto: ${d.contacto}${d.cargo ? ' | Cargo: ' + d.cargo : ''}` : '',
+    (d.email || d.telefono) ? `Email: ${d.email}${d.telefono ? ' | Tel: ' + d.telefono : ''}` : '',
+    d.web ? `Web: ${d.web}` : '',
+    (d.estado || d.prioridad) ? `Estado: ${d.estado}${d.prioridad ? ' | Prioridad: ' + d.prioridad : ''}` : '',
+    d.fechaContacto ? `Fecha Contacto: ${d.fechaContacto}` : '',
+    d.proximo ? `Próximo Seguimiento: ${d.proximo}` : '',
+    d.score ? `Score: ${d.score}` : '',
+    d.notas ? `Notas: ${d.notas}` : '',
+  ].filter(Boolean).join('\n');
+
+  const fields = { Name: empresa, Notes: notasFormateadas };
+
+  const btn = document.getElementById('btnGuardar');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  try {
+    let res;
+    if (editingId) {
+      res = await fetch(`${API}/${editingId}`, {
+        method: 'PATCH', headers: HEADERS,
+        body: JSON.stringify({ fields })
+      });
+    } else {
+      res = await fetch(API, {
+        method: 'POST', headers: HEADERS,
+        body: JSON.stringify({ records: [{ fields }] })
+      });
+    }
+    if (!res.ok) throw new Error(await res.text());
+    cerrarModal();
+    mostrarToast(editingId ? 'Prospecto actualizado en Airtable ✓' : 'Prospecto creado en Airtable ✓');
+    await cargarDatos();
+  } catch(e) {
+    mostrarToast('Error al guardar. Verifica el token.', true);
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar en Airtable';
+  }
+}
+
+// ─── ELIMINAR ────────────────────────────────
+async function eliminarProspecto(id, nombre) {
+  if (!confirm(`¿Eliminar "${nombre}"?\nEsto lo borrará también de Airtable.`)) return;
+  try {
+    const res = await fetch(`${API}/${id}`, { method: 'DELETE', headers: HEADERS });
+    if (!res.ok) throw new Error();
+    mostrarToast('Eliminado de Airtable ✓');
+    await cargarDatos();
+  } catch {
+    mostrarToast('Error al eliminar', true);
+  }
+}
+
+// ─── UTILS ───────────────────────────────────
+function setSyncStatus(estado, texto) {
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  dot.className = 'sync-dot ' + (estado === 'ok' ? 'ok' : estado === 'loading' ? 'loading' : '');
+  txt.textContent = texto;
+}
+
+function mostrarToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (error ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── LOGIN ───────────────────────────────────
+const PASSWORD = 'ava2026'; // ← CAMBIA ESTA CONTRASEÑA
+
+function verificarLogin() {
+  const input = document.getElementById('loginInput').value;
+  const error = document.getElementById('loginError');
+  if (input === PASSWORD) {
+    sessionStorage.setItem('ava_auth', '1');
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('appPrincipal').classList.remove('app-hidden');
+    cargarDatos();
+    setInterval(cargarDatos, 60000);
+  } else {
+    error.style.display = 'block';
+    document.getElementById('loginInput').value = '';
+    document.getElementById('loginInput').focus();
+  }
+}
+
+// ─── INICIO ──────────────────────────────────
+if (sessionStorage.getItem('ava_auth') === '1') {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('appPrincipal').classList.remove('app-hidden');
+  cargarDatos();
+  setInterval(cargarDatos, 60000);
+} else {
+  document.getElementById('loginInput').focus();
+}
+</script>
+</div>
+</body>
+</html>
