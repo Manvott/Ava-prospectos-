@@ -1,0 +1,622 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVA SELECCIÓN · Prospectos de Proveedores</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --negro: #111111;
+    --amarillo: #F5C200;
+    --amarillo-light: #FFF8D6;
+    --blanco: #FFFFFF;
+    --gris1: #F7F7F5;
+    --gris2: #EBEBEB;
+    --gris3: #999;
+    --verde: #2D7A4F;
+    --rojo: #C0392B;
+    --azul: #1A4A8A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--gris1); color: var(--negro); min-height: 100vh; }
+
+  header {
+    background: var(--negro);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px solid var(--amarillo);
+  }
+
+  .logo-area { display: flex; align-items: center; gap: 12px; }
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: var(--amarillo);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px; color: var(--negro); font-weight: bold;
+  }
+  .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--blanco); letter-spacing: 0.05em; }
+  .logo-sub { font-size: 0.65rem; color: var(--amarillo); letter-spacing: 0.15em; text-transform: uppercase; }
+
+  .header-right { display: flex; gap: 10px; align-items: center; }
+
+  .btn {
+    padding: 8px 18px; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+    border-radius: 2px; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--amarillo); color: var(--negro); }
+  .btn-primary:hover { background: #e0af00; }
+  .btn-outline { background: transparent; color: var(--blanco); border: 1px solid rgba(255,255,255,0.3); }
+  .btn-outline:hover { border-color: var(--amarillo); color: var(--amarillo); }
+
+  main { padding: 1.5rem 2rem; max-width: 1600px; margin: 0 auto; }
+
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem; margin-bottom: 1.5rem;
+  }
+  .stat-card { background: var(--blanco); border: 1px solid var(--gris2); padding: 1rem 1.2rem; }
+  .stat-num { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--negro); line-height: 1; }
+  .stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gris3); font-weight: 500; }
+  .stat-card.gold { border-top: 3px solid var(--amarillo); }
+  .stat-card.green { border-top: 3px solid var(--verde); }
+  .stat-card.blue { border-top: 3px solid var(--azul); }
+  .stat-card.red { border-top: 3px solid var(--rojo); }
+
+  .toolbar {
+    background: var(--blanco); border: 1px solid var(--gris2);
+    padding: 1rem 1.2rem; margin-bottom: 1rem;
+    display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center;
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-wrap input {
+    width: 100%; padding: 8px 12px 8px 36px;
+    border: 1px solid var(--gris2);
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    background: var(--gris1); outline: none; transition: border-color 0.15s;
+  }
+  .search-wrap input:focus { border-color: var(--amarillo); }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--gris3); font-size: 14px; }
+
+  .filter-select {
+    padding: 8px 12px; border: 1px solid var(--gris2);
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    background: var(--gris1); color: var(--negro); outline: none; cursor: pointer; min-width: 150px;
+  }
+  .filter-select:focus { border-color: var(--amarillo); }
+
+  .sync-status {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; color: var(--gris3);
+    padding: 6px 12px; border: 1px solid var(--gris2); background: var(--blanco);
+    border-radius: 2px; white-space: nowrap;
+  }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gris3); }
+  .sync-dot.ok { background: var(--verde); }
+  .sync-dot.loading { background: var(--amarillo); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .table-wrap { background: var(--blanco); border: 1px solid var(--gris2); overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; min-width: 900px; }
+  thead th {
+    background: var(--negro); color: var(--amarillo);
+    padding: 10px 12px; text-align: left; font-weight: 500;
+    font-size: 0.73rem; text-transform: uppercase; letter-spacing: 0.06em;
+    white-space: nowrap; cursor: pointer; user-select: none;
+    border-right: 1px solid rgba(255,255,255,0.05);
+  }
+  thead th:hover { background: #222; }
+
+  tbody tr { border-bottom: 1px solid var(--gris2); transition: background 0.1s; }
+  tbody tr:hover { background: var(--amarillo-light); }
+  tbody td { padding: 10px 12px; vertical-align: middle; }
+
+  .empresa-name { font-weight: 600; }
+
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 2px; font-size: 0.72rem; font-weight: 500; white-space: nowrap; }
+  .badge-alta { background: #fff3cd; color: #8a5700; border: 1px solid #f5c200; }
+  .badge-media { background: #e3f2fd; color: #1A4A8A; border: 1px solid #90CAF9; }
+  .badge-baja { background: #f5f5f5; color: #666; border: 1px solid #ddd; }
+
+  .score { font-family: 'DM Serif Display', serif; font-size: 1.1rem; font-weight: bold; }
+  .score-high { color: var(--verde); }
+  .score-mid { color: #e67e22; }
+  .score-low { color: var(--gris3); }
+
+  .btn-edit, .btn-del {
+    padding: 5px 10px; border: none; cursor: pointer;
+    font-size: 0.75rem; border-radius: 2px;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+  }
+  .btn-edit { background: var(--negro); color: var(--amarillo); }
+  .btn-edit:hover { background: #333; }
+  .btn-del { background: transparent; color: #c0392b; border: 1px solid rgba(192,57,43,0.3); margin-left: 4px; }
+  .btn-del:hover { background: rgba(192,57,43,0.1); }
+
+  .loading-row td { text-align: center; padding: 3rem; color: var(--gris3); font-style: italic; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(17,17,17,0.75); z-index: 1000;
+    align-items: center; justify-content: center; padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--blanco); width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; border-top: 4px solid var(--amarillo); }
+  .modal-header { background: var(--negro); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-family: 'DM Serif Display', serif; color: var(--blanco); font-size: 1.1rem; }
+  .modal-close { background: none; border: none; color: var(--gris3); font-size: 1.4rem; cursor: pointer; transition: color 0.15s; }
+  .modal-close:hover { color: var(--amarillo); }
+  .modal-body { padding: 1.5rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #555; }
+  input[type=text], input[type=email], input[type=date], input[type=number], select, textarea {
+    padding: 9px 12px; border: 1px solid var(--gris2);
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--negro);
+    outline: none; transition: border-color 0.15s; background: var(--gris1); border-radius: 2px;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--amarillo); background: #fff; }
+  textarea { resize: vertical; min-height: 70px; }
+  .modal-footer {
+    padding: 1rem 1.5rem; border-top: 1px solid var(--gris2);
+    display: flex; justify-content: flex-end; gap: 10px; background: var(--gris1);
+  }
+  .btn-cancel { background: transparent; color: #555; border: 1px solid var(--gris2); padding: 9px 20px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; border-radius: 2px; }
+  .btn-save { background: var(--amarillo); color: var(--negro); border: none; padding: 9px 24px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; border-radius: 2px; }
+  .btn-save:hover { background: #e0af00; }
+  .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--negro); color: var(--blanco);
+    padding: 12px 20px; border-left: 4px solid var(--amarillo);
+    font-size: 0.85rem; z-index: 9999;
+    opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { border-left-color: var(--rojo); }
+
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--negro); margin-bottom: 0.3rem; }
+  .section-sub { font-size: 0.8rem; color: var(--gris3); margin-bottom: 1.2rem; }
+
+  .pagination {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.8rem 1.2rem; border-top: 1px solid var(--gris2);
+    font-size: 0.8rem; color: var(--gris3); background: var(--gris1);
+  }
+
+  /* CONFIG MODAL */
+  .config-note { background: var(--amarillo-light); border: 1px solid var(--amarillo); padding: 0.8rem 1rem; font-size: 0.82rem; margin-bottom: 1rem; }
+
+  @media (max-width: 700px) {
+    main { padding: 1rem; }
+    .form-grid { grid-template-columns: 1fr; }
+    header { padding: 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <div class="logo-mark">A</div>
+    <div>
+      <div class="logo-text">AVA SELECCIÓN</div>
+      <div class="logo-sub">Prospectos · Live</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="sync-status">
+      <div class="sync-dot" id="syncDot"></div>
+      <span id="syncText">Conectando...</span>
+    </div>
+    <button class="btn btn-primary" onclick="abrirModal()">+ Nuevo Prospecto</button>
+  </div>
+</header>
+
+<main>
+  <div style="margin-bottom:1.2rem;">
+    <div class="section-title">Base de Datos · Proveedores</div>
+    <div class="section-sub">Sincronizado en tiempo real con Airtable</div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card gold"><div class="stat-num" id="stat-total">–</div><div class="stat-label">Total Prospectos</div></div>
+    <div class="stat-card green"><div class="stat-num" id="stat-activos">–</div><div class="stat-label">Clientes Potenciales</div></div>
+    <div class="stat-card blue"><div class="stat-num" id="stat-alta">–</div><div class="stat-label">Prioridad Alta</div></div>
+    <div class="stat-card red"><div class="stat-num" id="stat-seguimiento">–</div><div class="stat-label">Seguimiento Pendiente</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-score">–</div><div class="stat-label">Score Medio</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar empresa, contacto, producto..." oninput="filtrar()">
+    </div>
+    <select class="filter-select" id="filtroEstado" onchange="filtrar()">
+      <option value="">Todos los estados</option>
+      <option>Prospecto</option>
+      <option>Contactado</option>
+      <option>Reunión pendiente</option>
+      <option>Cliente potencial</option>
+      <option>Cliente activo</option>
+      <option>Descartado</option>
+    </select>
+    <select class="filter-select" id="filtroPrioridad" onchange="filtrar()">
+      <option value="">Toda prioridad</option>
+      <option>Alta</option>
+      <option>Media</option>
+      <option>Baja</option>
+    </select>
+    <button class="btn btn-outline" style="background:#111;color:#888;font-size:0.78rem;padding:8px 12px;" onclick="limpiarFiltros()">✕ Limpiar</button>
+    <button class="btn btn-outline" style="background:#111;color:#888;font-size:0.78rem;padding:8px 12px;" onclick="cargarDatos()">↻ Actualizar</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>Categoría</th>
+          <th>Producto</th>
+          <th>Contacto</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Estado</th>
+          <th>Prioridad</th>
+          <th>F. Contacto</th>
+          <th>Próx. Seg.</th>
+          <th>Score</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr class="loading-row"><td colspan="12">Cargando datos desde Airtable...</td></tr>
+      </tbody>
+    </table>
+    <div class="pagination">
+      <span id="pag-info"></span>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL NUEVO/EDITAR -->
+<div class="modal-overlay" id="modalOverlay" onclick="cerrarModalSiFondo(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Nuevo Prospecto</span>
+      <button class="modal-close" onclick="cerrarModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label>Nombre Empresa *</label><input type="text" id="f-empresa" placeholder="Bodegas García..."></div>
+        <div class="form-group"><label>Categoría</label>
+          <select id="f-categoria">
+            <option value="">Seleccionar...</option>
+            <option>Vinos y Cavas</option><option>Aceites y Grasas</option><option>Lácteos</option>
+            <option>Conservas y Enlatados</option><option>Mieles y Endulzantes</option><option>Charcutería</option>
+            <option>Especias y Condimentos</option><option>Repostería Artesana</option><option>Bebidas sin alcohol</option><option>Otros</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Producto / Servicio</label><input type="text" id="f-producto"></div>
+        <div class="form-group"><label>País</label><input type="text" id="f-pais" placeholder="España"></div>
+        <div class="form-group"><label>Ciudad</label><input type="text" id="f-ciudad"></div>
+        <div class="form-group"><label>Contacto</label><input type="text" id="f-contacto"></div>
+        <div class="form-group"><label>Cargo</label><input type="text" id="f-cargo"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="f-email"></div>
+        <div class="form-group"><label>Teléfono</label><input type="text" id="f-telefono"></div>
+        <div class="form-group"><label>Web</label><input type="text" id="f-web"></div>
+        <div class="form-group"><label>Estado</label>
+          <select id="f-estado">
+            <option>Prospecto</option><option>Contactado</option><option>Reunión pendiente</option>
+            <option>Cliente potencial</option><option>Cliente activo</option><option>Descartado</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Prioridad</label>
+          <select id="f-prioridad"><option>Media</option><option>Alta</option><option>Baja</option></select>
+        </div>
+        <div class="form-group"><label>Fecha Contacto</label><input type="date" id="f-fechaContacto"></div>
+        <div class="form-group"><label>Próximo Seguimiento</label><input type="date" id="f-proximo"></div>
+        <div class="form-group"><label>Puntuación (1–10)</label><input type="number" id="f-score" min="1" max="10"></div>
+        <div class="form-group full"><label>Notas</label><textarea id="f-notas" placeholder="Observaciones..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-save" id="btnGuardar" onclick="guardarProspecto()">Guardar en Airtable</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// CONFIGURACIÓN — SOLO CAMBIA ESTO
+// =============================================
+const AIRTABLE_TOKEN = 'pat6mAbURpkEh1nri';  //
+const BASE_ID = 'appPn5lR13YCseEdr';
+const TABLE_ID = 'tbl065JZmgYp6TDiS';
+// =============================================
+
+const API = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`;
+const HEADERS = { 'Authorization': `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
+
+let registros = [];   // todos los de Airtable
+let filtrados = [];   // los que pasan el filtro
+let editingId = null; // record ID de Airtable
+
+// ─── PARSEAR NOTAS ───────────────────────────
+function parsearNotas(notasRaw) {
+  if (!notasRaw) return {};
+  const p = {};
+  const lineas = notasRaw.split('\n');
+  lineas.forEach(l => {
+    const m = l.match(/^([^:]+):\s*(.+)$/);
+    if (!m) return;
+    const k = m[1].trim().toLowerCase();
+    const v = m[2].trim();
+    if (k === 'categoría' || k === 'categoria') p.categoria = v;
+    else if (k === 'producto') p.producto = v;
+    else if (k.includes('país') || k === 'pais') {
+      const parts = v.split('|');
+      p.pais = parts[0].trim();
+      if (parts[1]) p.ciudad = parts[1].replace('Ciudad:', '').trim();
+    }
+    else if (k === 'contacto') {
+      const parts = v.split('|');
+      p.contacto = parts[0].trim();
+      if (parts[1]) p.cargo = parts[1].replace('Cargo:', '').trim();
+    }
+    else if (k === 'email') {
+      const parts = v.split('|');
+      p.email = parts[0].trim();
+      if (parts[1]) p.telefono = parts[1].replace('Tel:', '').trim();
+    }
+    else if (k === 'web') p.web = v;
+    else if (k === 'estado') {
+      const parts = v.split('|');
+      p.estado = parts[0].trim();
+      if (parts[1]) p.prioridad = parts[1].replace('Prioridad:', '').trim();
+    }
+    else if (k.includes('fecha')) p.fechaContacto = v;
+    else if (k.includes('próximo') || k.includes('proximo')) p.proximo = v;
+    else if (k === 'score') p.score = parseInt(v);
+    else if (k === 'notas') p.notas = v;
+  });
+  return p;
+}
+
+// ─── CARGAR DATOS ────────────────────────────
+async function cargarDatos() {
+  setSyncStatus('loading', 'Cargando...');
+  try {
+    const res = await fetch(`${API}?pageSize=100`, { headers: HEADERS });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    registros = data.records.map(r => {
+      const extra = parsearNotas(r.fields.Notes);
+      return {
+        _id: r.id,
+        empresa: r.fields.Name || '',
+        ...extra
+      };
+    });
+    filtrar();
+    setSyncStatus('ok', `Actualizado ${new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'})}`);
+  } catch(e) {
+    setSyncStatus('error', 'Error de conexión');
+    mostrarToast('Error al conectar con Airtable. Verifica el token.', true);
+    console.error(e);
+  }
+}
+
+// ─── RENDER ──────────────────────────────────
+function estadoStyle(e) {
+  const map = {
+    'Prospecto': 'background:#f0f0f0;color:#555',
+    'Contactado': 'background:#e3f2fd;color:#1A4A8A',
+    'Reunión pendiente': 'background:#fff8e1;color:#8a5700',
+    'Cliente potencial': 'background:#e8f5e9;color:#2D7A4F',
+    'Cliente activo': 'background:#2D7A4F;color:#fff',
+    'Descartado': 'background:#fce4ec;color:#c0392b',
+  };
+  return map[e] || 'background:#eee;color:#333';
+}
+
+function renderTabla() {
+  const tbody = document.getElementById('tbody');
+  if (!filtrados.length) {
+    tbody.innerHTML = `<tr class="loading-row"><td colspan="12">No se encontraron prospectos.</td></tr>`;
+    document.getElementById('pag-info').textContent = 'Sin resultados';
+    actualizarStats();
+    return;
+  }
+  tbody.innerHTML = filtrados.map(p => {
+    const sc = p.score >= 8 ? 'high' : p.score >= 6 ? 'mid' : 'low';
+    const pBadge = `badge-${(p.prioridad||'baja').toLowerCase()}`;
+    const estSt = estadoStyle(p.estado);
+    return `<tr>
+      <td><div class="empresa-name">${p.empresa}</div><div style="font-size:0.72rem;color:#888">${p.ciudad||''}</div></td>
+      <td style="font-size:0.78rem;color:#555">${p.categoria||'–'}</td>
+      <td style="font-size:0.78rem">${p.producto||'–'}</td>
+      <td><div style="font-weight:500;font-size:0.82rem">${p.contacto||'–'}</div><div style="font-size:0.71rem;color:#888">${p.cargo||''}</div></td>
+      <td style="font-size:0.78rem"><a href="mailto:${p.email}" style="color:#1A4A8A;text-decoration:none">${p.email||'–'}</a></td>
+      <td style="font-size:0.78rem;white-space:nowrap">${p.telefono||'–'}</td>
+      <td><span style="display:inline-block;padding:3px 9px;border-radius:2px;font-size:0.72rem;font-weight:500;${estSt}">${p.estado||'–'}</span></td>
+      <td><span class="badge ${pBadge}">${p.prioridad||'–'}</span></td>
+      <td style="font-size:0.78rem;white-space:nowrap">${p.fechaContacto||'–'}</td>
+      <td style="font-size:0.78rem;white-space:nowrap">${p.proximo||'–'}</td>
+      <td><span class="score score-${sc}">${p.score||'–'}</span></td>
+      <td>
+        <button class="btn-edit" onclick="editarProspecto('${p._id}')">Editar</button>
+        <button class="btn-del" onclick="eliminarProspecto('${p._id}', '${p.empresa.replace(/'/g,"\\'")}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('pag-info').textContent = `${filtrados.length} prospecto${filtrados.length !== 1 ? 's' : ''}`;
+  actualizarStats();
+}
+
+function actualizarStats() {
+  document.getElementById('stat-total').textContent = registros.length;
+  document.getElementById('stat-activos').textContent = registros.filter(p => p.estado === 'Cliente potencial' || p.estado === 'Cliente activo').length;
+  document.getElementById('stat-alta').textContent = registros.filter(p => p.prioridad === 'Alta').length;
+  document.getElementById('stat-seguimiento').textContent = registros.filter(p => p.proximo).length;
+  const scores = registros.filter(p => p.score).map(p => Number(p.score));
+  document.getElementById('stat-score').textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '–';
+}
+
+// ─── FILTRAR ─────────────────────────────────
+function filtrar() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const estado = document.getElementById('filtroEstado').value;
+  const prior = document.getElementById('filtroPrioridad').value;
+  filtrados = registros.filter(p => {
+    const texto = [p.empresa, p.contacto, p.producto, p.email, p.ciudad, p.notas, p.categoria].join(' ').toLowerCase();
+    return (!q || texto.includes(q)) && (!estado || p.estado === estado) && (!prior || p.prioridad === prior);
+  });
+  renderTabla();
+}
+
+function limpiarFiltros() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filtroEstado').value = '';
+  document.getElementById('filtroPrioridad').value = '';
+  filtrar();
+}
+
+// ─── MODAL ───────────────────────────────────
+function abrirModal(id = null) {
+  editingId = id;
+  const p = id ? registros.find(x => x._id === id) : null;
+  document.getElementById('modalTitle').textContent = id ? 'Editar Prospecto' : 'Nuevo Prospecto';
+  const campos = ['empresa','categoria','producto','pais','ciudad','contacto','cargo','email','telefono','web','estado','prioridad','fechaContacto','proximo','notas','score'];
+  campos.forEach(c => {
+    const el = document.getElementById('f-' + c);
+    if (el) el.value = p ? (p[c] || '') : '';
+  });
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function editarProspecto(id) { abrirModal(id); }
+function cerrarModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function cerrarModalSiFondo(e) { if (e.target.id === 'modalOverlay') cerrarModal(); }
+
+// ─── GUARDAR ─────────────────────────────────
+async function guardarProspecto() {
+  const empresa = document.getElementById('f-empresa').value.trim();
+  if (!empresa) { mostrarToast('El nombre de la empresa es obligatorio', true); return; }
+
+  const d = {
+    categoria: document.getElementById('f-categoria').value,
+    producto: document.getElementById('f-producto').value,
+    pais: document.getElementById('f-pais').value,
+    ciudad: document.getElementById('f-ciudad').value,
+    contacto: document.getElementById('f-contacto').value,
+    cargo: document.getElementById('f-cargo').value,
+    email: document.getElementById('f-email').value,
+    telefono: document.getElementById('f-telefono').value,
+    web: document.getElementById('f-web').value,
+    estado: document.getElementById('f-estado').value,
+    prioridad: document.getElementById('f-prioridad').value,
+    fechaContacto: document.getElementById('f-fechaContacto').value,
+    proximo: document.getElementById('f-proximo').value,
+    notas: document.getElementById('f-notas').value,
+    score: document.getElementById('f-score').value,
+  };
+
+  const notasFormateadas = [
+    d.categoria ? `Categoría: ${d.categoria}` : '',
+    d.producto ? `Producto: ${d.producto}` : '',
+    (d.pais || d.ciudad) ? `País: ${d.pais}${d.ciudad ? ' | Ciudad: ' + d.ciudad : ''}` : '',
+    (d.contacto || d.cargo) ? `Contacto: ${d.contacto}${d.cargo ? ' | Cargo: ' + d.cargo : ''}` : '',
+    (d.email || d.telefono) ? `Email: ${d.email}${d.telefono ? ' | Tel: ' + d.telefono : ''}` : '',
+    d.web ? `Web: ${d.web}` : '',
+    (d.estado || d.prioridad) ? `Estado: ${d.estado}${d.prioridad ? ' | Prioridad: ' + d.prioridad : ''}` : '',
+    d.fechaContacto ? `Fecha Contacto: ${d.fechaContacto}` : '',
+    d.proximo ? `Próximo Seguimiento: ${d.proximo}` : '',
+    d.score ? `Score: ${d.score}` : '',
+    d.notas ? `Notas: ${d.notas}` : '',
+  ].filter(Boolean).join('\n');
+
+  const fields = { Name: empresa, Notes: notasFormateadas };
+
+  const btn = document.getElementById('btnGuardar');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  try {
+    let res;
+    if (editingId) {
+      res = await fetch(`${API}/${editingId}`, {
+        method: 'PATCH', headers: HEADERS,
+        body: JSON.stringify({ fields })
+      });
+    } else {
+      res = await fetch(API, {
+        method: 'POST', headers: HEADERS,
+        body: JSON.stringify({ records: [{ fields }] })
+      });
+    }
+    if (!res.ok) throw new Error(await res.text());
+    cerrarModal();
+    mostrarToast(editingId ? 'Prospecto actualizado en Airtable ✓' : 'Prospecto creado en Airtable ✓');
+    await cargarDatos();
+  } catch(e) {
+    mostrarToast('Error al guardar. Verifica el token.', true);
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar en Airtable';
+  }
+}
+
+// ─── ELIMINAR ────────────────────────────────
+async function eliminarProspecto(id, nombre) {
+  if (!confirm(`¿Eliminar "${nombre}"?\nEsto lo borrará también de Airtable.`)) return;
+  try {
+    const res = await fetch(`${API}/${id}`, { method: 'DELETE', headers: HEADERS });
+    if (!res.ok) throw new Error();
+    mostrarToast('Eliminado de Airtable ✓');
+    await cargarDatos();
+  } catch {
+    mostrarToast('Error al eliminar', true);
+  }
+}
+
+// ─── UTILS ───────────────────────────────────
+function setSyncStatus(estado, texto) {
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  dot.className = 'sync-dot ' + (estado === 'ok' ? 'ok' : estado === 'loading' ? 'loading' : '');
+  txt.textContent = texto;
+}
+
+function mostrarToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (error ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── INICIO ──────────────────────────────────
+cargarDatos();
+setInterval(cargarDatos, 60000); // auto-refresco cada 60 segundos
+</script>
+</body>
+</html>
